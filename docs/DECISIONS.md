@@ -270,6 +270,53 @@ already-confirmed `StateBoundedMerkleTree`/`CompactTypeField` primitives — so 
 (`for (const leaf of ledger.voters)`) needs adjusting after a real compile, not the whole
 tally/commitments read path.
 
+## Real bugs found and fixed by actually running the build/tests
+
+Genuine `npm run typecheck`, `npm test`, and `npx vite build` runs in this sandbox (against real
+installed packages) surfaced and fixed several bugs no amount of docs-reading would have caught:
+
+- **Fastify v5 logger option**: `Fastify({ logger: pinoInstance })` throws `"logger options only
+  accepts a configuration object"` — a pre-built pino instance must be passed as `loggerInstance`
+  instead. Caught by running `packages/server`'s vitest suite for real.
+- **`@midnight-ntwrk/ledger-v8` duplicate installs**: see "Version pins" above — must be pinned to
+  the exact same version (`8.1.0`, no caret) in every workspace package or npm installs two
+  physically separate, TypeScript-incompatible copies. Caught by `tsc` on `packages/server`.
+- **`isomorphic-ws` named import shape**: `indexerPublicDataProvider`'s `webSocketImpl` param is
+  typed `typeof ws.WebSocket` where `ws = import * as ws from 'isomorphic-ws'` (its own `export =
+  require('ws')` re-export) — not a default export, not the plain `ws` package. Caught by `tsc`
+  on `packages/shared`.
+- **`packages/shared`'s barrel leaked Node-only code into the browser bundle**: `providers.ts`
+  (uses `ws`/`isomorphic-ws`, Node's `fs`/`path` via the level/node-zk-config providers) was
+  re-exported from `shared`'s main `index.ts`, so `packages/client` — which only needs
+  `config`/`credential`/`merkle`/`ballot-client` — transitively pulled it into the Vite bundle.
+  `isomorphic-ws`'s *browser* build doesn't export a `WebSocket` binding, so `vite build` failed
+  with `"WebSocket" is not exported by ".../isomorphic-ws/browser.js"`. Fixed by moving
+  `providers.ts` out of the main export and exposing it only via the subpath
+  `@midnight-ballot/shared/providers` (added to `package.json`'s `exports` map) — server and CLI
+  scripts import that subpath directly; the client never touches it. Caught by an actual `npx
+  vite build`, not typecheck (Node built-ins get silently externalized by Vite with a warning,
+  not an error — only the named-export mismatch failed the build).
+- **`@midnight-ntwrk/ledger-v8`'s WASM module needs `vite-plugin-wasm`**: it ships a WASM module
+  using the "ESM integration proposal for Wasm," which Vite/Rollup can't load out of the box
+  (`vite build` failed with `"ESM integration proposal for Wasm" is not supported`). Fixed by
+  adding `vite-plugin-wasm` and `build.target: 'esnext'` to `packages/client/vite.config.ts`.
+  `vite-plugin-top-level-await` was tried alongside it (a common pairing for this exact problem)
+  but its Rollup output step crashed on this specific dependency tree (`missing field 'type'`
+  inside its SWC-based codegen) — dropped it once a real build showed `esnext` alone was enough
+  (top-level await is native to esnext output, so the plugin was redundant here anyway).
+- **Two files imported `createBallotPrivateState`/`BallotPrivateState` from
+  `@midnight-ballot/shared`**: that type/function actually lives in `@midnight-ballot/contracts`
+  (`witnesses.ts`), re-exported via its own `index.ts` — `shared` never re-exported it. Caught by
+  `tsc` on `packages/client` (`scripts/deploy-contract.ts` and `register-voter.ts` had the same
+  bug, found by grepping for the same import once the client error surfaced).
+- The real `@midnight-ntwrk/dapp-connector-api` package (confirmed by downloading it) declares
+  `window.midnight` itself and has a materially richer API than the docs summary implied:
+  `getDustBalance()` returns `{ cap, balance }` not a plain `bigint`; `getUnshieldedAddress()`
+  returns `{ unshieldedAddress }` not a plain string; `getConnectionStatus()` returns a tagged
+  union (`{status:'connected', networkId} | {status:'disconnected'}`), not an object that always
+  has `networkId`. `packages/client/src/hooks/useWallet.ts` was rewritten against these real
+  types instead of the hand-rolled approximation from the first pass.
+
 ## Open items / unverified at build time
 
 - The build environment has npm-registry and Docker Hub access but **no access to

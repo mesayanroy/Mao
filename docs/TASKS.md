@@ -22,7 +22,17 @@ Tracks build progress against the execution plan. Update as phases complete.
       fixed two real bugs this way: Fastify v5 needs `loggerInstance` (not `logger`) to accept a
       pre-built pino instance, and `@midnight-ntwrk/ledger-v8` needs an *exact* version pin across
       workspaces or npm installs duplicate, type-incompatible copies.
-- [ ] 7. Client: theme, wallet picker, hooks, four pages
+- [x] 7. Client: theme, wallet picker, hooks, four pages — **actually built** with a real `npx
+      vite build` (not just typechecked) against real installed deps, using a temporary stub for
+      the not-yet-compiled `@midnight-ballot/contracts` module (deleted afterward). Caught and
+      fixed three real bugs this way: `packages/shared`'s barrel leaked Node-only `providers.ts`
+      into the browser bundle (isomorphic-ws browser build breaks on it — moved to a
+      `@midnight-ballot/shared/providers` subpath export instead), `@midnight-ntwrk/ledger-v8`'s
+      WASM needs `vite-plugin-wasm` + `esnext` build target, and two files imported
+      `createBallotPrivateState` from the wrong package. `useWallet.ts` was also rewritten
+      against the real `@midnight-ntwrk/dapp-connector-api` package (downloaded and read
+      directly) instead of a hand-rolled approximation of `window.midnight`'s shape. See
+      docs/DECISIONS.md "Real bugs found and fixed by actually running the build/tests".
 - [ ] 8. Docker: Dockerfiles, nginx, compose (dev + prod), verify healthy
 - [ ] 9. CI/CD workflows
 - [ ] 10. Final pass: typecheck/lint/test/build, docs-match-code check, secret scan

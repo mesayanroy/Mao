@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -22,7 +22,7 @@ export interface AppDeps {
   readonly sponsor?: SponsorService;
 }
 
-export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
+export async function buildApp(deps: AppDeps) {
   const app = Fastify({ loggerInstance: deps.logger, bodyLimit: 256 * 1024 });
 
   await app.register(helmet, { contentSecurityPolicy: false });

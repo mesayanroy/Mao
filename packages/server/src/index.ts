@@ -1,5 +1,6 @@
 import { mnemonicToSeedSync } from 'bip39';
-import { configureNetwork, createIndexerProvider, resolveNetwork } from '@midnight-ballot/shared';
+import { configureNetwork, resolveNetwork } from '@midnight-ballot/shared';
+import { createIndexerProvider } from '@midnight-ballot/shared/providers';
 import { loadEnv } from './env.js';
 import { createLogger } from './logger.js';
 import { buildApp } from './app.js';
@@ -49,7 +50,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console -- logger may not exist yet if env parsing itself failed
+  // logger may not exist yet if env parsing itself failed
   console.error('fatal startup error:', err);
   process.exit(1);
 });

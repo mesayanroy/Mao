@@ -1,0 +1,23 @@
+/* Design tokens — the ONLY place colors/spacing/radius are defined.
+   Black/white minimal: white background, black text, 1px black borders,
+   no gradients, no images, no animations. Restyle by editing only this
+   file. */
+:root {
+  --bg: #ffffff;
+  --fg: #000000;
+  --muted: #595959;
+  --border: #000000;
+  --border-subtle: #d9d9d9;
+  --radius: 0;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 40px;
+
+  --danger: #b00020;
+  --danger-bg: #fff0f0;
+}

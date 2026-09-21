@@ -2,6 +2,7 @@
   "name": "midnight-ballot",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Private, eligibility-gated voting with publicly verifiable tallies on Midnight Network.",
   "license": "Apache-2.0",
   "engines": {
