@@ -45,7 +45,14 @@ Tracks build progress against the execution plan. Update as phases complete.
       GitHub Actions runner with GitHub/registry network access, which this sandbox lacks — see
       docs/DECISIONS.md); written directly against the same verified npm scripts
       (`compile:contracts`, `test:contracts`, `test:server`, `build`) already exercised locally.
-- [ ] 10. Final pass: typecheck/lint/test/build, docs-match-code check, secret scan
+- [x] 10. Final pass: `npm run lint` passes clean across shared/server/client. `npm run
+      typecheck`/`npm test`/`npm run build` at the repo root all fail at the same single,
+      documented point (`@midnight-ballot/contracts`'s compiled `managed/` output doesn't exist —
+      the Compact compiler needs GitHub release access this sandbox doesn't have) — every package
+      was already proven to typecheck/test/build cleanly *past* that point using a temporary stub
+      (see docs/DECISIONS.md and docs/CONTEXT.md). Verified no `.env`, `node_modules`, or
+      `managed/` artifacts were ever committed, and grepped for common secret patterns (none
+      found). Docs cross-checked against final code state.
 
 ## Future improvements (explicitly out of scope for MVP)
 
