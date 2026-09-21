@@ -28,24 +28,15 @@ if ! docker compose version >/dev/null 2>&1; then
 fi
 echo "  $(docker compose version)"
 
-log "Checking Compact compiler"
-if command -v compact >/dev/null 2>&1; then
-  echo "  compact: $(compact --version 2>&1 | head -n1)"
-else
-  echo "  compact CLI not found — installing (see docs/DECISIONS.md for the pinned source)"
-  curl --proto '=https' --tlsv1.2 -LsSf \
-    https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
-  # shellcheck disable=SC1090
-  [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env" || true
-  export PATH="$HOME/.local/bin:$PATH"
-  if ! command -v compact >/dev/null 2>&1; then
-    fail "compact CLI installed but not on PATH. Restart your shell (see installer output) and re-run."
-  fi
-  echo "  compact: $(compact --version 2>&1 | head -n1)"
-fi
-
 log "Installing npm dependencies (npm ci)"
 npm ci
+
+log "Fetching the Compact compiler (@midnight-ntwrk/midnight-js-compact)"
+export COMPACTC_VERSION="${COMPACTC_VERSION:-0.31.1}"
+echo "  COMPACTC_VERSION=$COMPACTC_VERSION (see docs/DECISIONS.md for the pin)"
+echo "  macOS/Linux x64/arm64: fetches a native compactc binary."
+echo "  Other platforms (incl. Windows): falls back to Docker (COMPACT_DOCKER_IMAGE, default ghcr.io/midnight-ntwrk/compactc)."
+npm run -w packages/contracts fetch-compactc
 
 log "Seeding .env"
 if [ ! -f .env ]; then

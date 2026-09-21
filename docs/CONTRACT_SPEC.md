@@ -12,15 +12,16 @@ Full API reference for the contract in `packages/contracts/src/ballot.compact`. 
 | `phase` | `Phase` (enum: `Registration`, `Voting`, `Closed`) | Guards every circuit. |
 | `voters` | `HistoricMerkleTree<10, Bytes<32>>` | Leaves are voter commitments. `HistoricMerkleTree` (not plain `MerkleTree`) so a path proven against an older root stays valid after later registrations — see `docs/DECISIONS.md`. |
 | `nullifiers` | `Set<Bytes<32>>` | One entry per vote cast. Membership = "this credential already voted." |
-| `optionCount` | `Uint<0..4>` | Number of valid options (2–4), set in the constructor. |
+| `optionCount` | `Uint<2..4>` | Number of valid options, set in the constructor. The `2..4` range is compiler-enforced — no runtime bounds assert needed. |
 | `tally0..tally3` | `Counter` × 4 | Per-option vote counts. Ledger fields are named, not array-indexed (see DECISIONS.md), so each option gets its own field; unused options (index ≥ `optionCount`) simply stay at 0. |
 
 ## Circuits
 
-### `constructor(organizerKeyCommitment: Bytes<32>, pollIdSeed: Bytes<32>, optionCount: Uint<0..4>)`
+### `constructor(organizerKeyCommitment: Bytes<32>, pollIdSeed: Bytes<32>, initialOptionCount: Uint<2..4>)`
 
 Initializes `organizerKey`, `pollId`, `optionCount`, `phase = Registration`, empty `voters`
-tree, empty `nullifiers` set, all tallies at 0. Asserts `optionCount >= 2 && optionCount <= 4`.
+tree, empty `nullifiers` set, all tallies at 0. The `2..4` bound on the parameter type means an
+out-of-range value is a compile/encoding-time error for the caller, not a runtime assert.
 
 ### `registerVoter(commitment: Bytes<32>)` — organizer only, `Registration` phase
 
@@ -41,7 +42,7 @@ auditors; re-open would need a new poll).
 
 Transitions `phase = Closed`. Tallies become final and public.
 
-### `castVote(option: Uint<0..4>, path: MerkleTreePath<10, Bytes<32>>)` — `Voting` phase
+### `castVote(option: Uint<0..3>, path: MerkleTreePath<10, Bytes<32>>)` — `Voting` phase
 
 - **Witnesses used**: `voterSecret()` (the voter's local secret), the `path` argument itself
   is witness-supplied by the caller (client rebuilds it locally from public commitments —

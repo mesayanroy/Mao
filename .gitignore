@@ -5,7 +5,8 @@ build/
 *.local
 
 # Compact compiler output (regenerate with `npm run compile:contracts`)
-packages/contracts/managed/
+packages/contracts/managed/*
+!packages/contracts/managed/README.md
 packages/client/public/zk/*
 !packages/client/public/zk/.gitkeep
 

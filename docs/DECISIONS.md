@@ -69,12 +69,24 @@ Package.json dependency versions are pinned to caret ranges anchored on the abov
     return value (confirmed, lang-ref).
   - `Maybe<T>` via `none<T>()` / `some<T>(v)` / `.isSome` / `.value` (confirmed, bboard tutorial).
   - `assert(cond, "message")` (confirmed, bboard tutorial and lang-ref example).
-- Compact compiler install: `curl --proto '=https' --tlsv1.2 -LsSf
-  https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh`
-  (confirmed via docs.midnight.network/getting-started/installation, surfaced through search).
-  Compile invocation: `compact compile <src>.compact <out-dir>` (confirmed, bboard tutorial:
-  `compact compile src/bboard.compact src/managed/bboard`), producing
-  `compiler/ contract/ keys/ zkir/` under the output directory.
+- Compact compiler install: this repo uses `@midnight-ntwrk/midnight-js-compact` (the exact
+  package the brief names for "compile tooling") as the **primary, verified** install path —
+  confirmed by downloading the real published package (`npm pack
+  @midnight-ntwrk/midnight-js-compact@4.1.1`) and reading its shipped `README.md` and `.d.ts`
+  directly, not by guessing. It ships two bins: `fetch-compactc` (downloads a pinned
+  `compactc` version, controlled by `COMPACTC_VERSION` env var or `--version=`, into a
+  `managed/<version>/compactc` cache; on macOS/Linux x64/arm64 it fetches a native binary, on
+  any other platform — including Windows — it falls back to `COMPACT_DOCKER_IMAGE`, default
+  `ghcr.io/midnight-ntwrk/compactc`) and `run-compactc <input-file> <output-dir>` (runs it).
+  `scripts/bootstrap.sh` calls these via `npx` after `npm ci` rather than the alternative
+  `curl | sh` installer docs.midnight.network's getting-started page also documents — the npm
+  route is reproducible, version-pinned via `COMPACTC_VERSION`, and Windows/CI-friendly via its
+  Docker fallback, so it's preferred here. Compile invocation produces
+  `compiler/ contract/ keys/ zkir/` under the output directory (confirmed via the official
+  bboard tutorial's `compact compile src/bboard.compact src/managed/bboard` example, which
+  matches `run-compactc`'s own `<input-file> <output-dir>` signature).
+- `COMPACTC_VERSION` is pinned to `0.31.1` (support matrix's "Compact toolchain" version) in
+  `.env.example` / `packages/contracts/package.json`.
 
 ## Package scopes
 
@@ -203,17 +215,44 @@ CLI scripts, client bootstrap) calls it first, from `packages/shared/src/config.
   `501`-style `{ error: { code: 'SPONSOR_DISABLED' } }` rather than being unmounted, so clients
   get a clear typed error instead of a generic 404.
 
+## Verified directly from installed npm packages (not just docs pages)
+
+Network access to `registry.npmjs.org` and Docker Hub was available in the build environment
+even though `github.com`/`api.github.com` were not (both confirmed by direct connection tests).
+So instead of guessing at TypeScript API shapes from docs summaries, the actual published
+packages were downloaded (`npm pack ...@4.1.1`) and their shipped `.d.ts` files read directly
+for: `@midnight-ntwrk/compact-runtime` (`createCircuitContext`, `createConstructorContext`,
+`WitnessContext<L,PS>`, the generated `Contract` shape, `MerkleTreePath<A> { leaf, path }` —
+confirming the `.leaf` field used throughout `ballot.compact`'s security-critical assertions),
+`@midnight-ntwrk/midnight-js-contracts` (`deployContract`, `findDeployedContract`, `getStates`,
+`getPublicStates`, `getUnshieldedBalances` — richer/more precisely typed than the docs summary
+suggested, using an `Effect`-based `Contract`/`CompiledContract` generic system that
+application code mostly just passes through from the compiled contract module rather than
+constructing by hand), `@midnight-ntwrk/midnight-js-types` (`MidnightProviders`,
+`PrivateStateProvider`, `ZKConfigProvider`, `PublicDataProvider` full interfaces),
+`@midnight-ntwrk/midnight-js-network-id` (`NetworkId` is just `string`),
+`@midnight-ntwrk/midnight-js-indexer-public-data-provider` (`indexerPublicDataProvider(queryURL,
+subscriptionURL, webSocketImpl?)`), `@midnight-ntwrk/midnight-js-level-private-state-provider`
+(`levelPrivateStateProvider(config)`), `@midnight-ntwrk/midnight-js-http-client-proof-provider`
+(`httpClientProofProvider(url, zkConfigProvider, config?)`),
+`@midnight-ntwrk/midnight-js-fetch-zk-config-provider` (`FetchZkConfigProvider` is a **class**,
+`new FetchZkConfigProvider(baseURL, fetchFunc?)` — not a factory function as an earlier docs
+summary implied), and `@midnight-ntwrk/midnight-js-dapp-connector-proof-provider`
+(`dappConnectorProofProvider(api, zkConfigProvider, costModel): Promise<ProofProvider>`).
+
 ## Open items / unverified at build time
 
-- Exact npm publish versions for `@midnight-ntwrk/midnight-js-compact` (compiler-manager
-  package name given in the brief) could not be independently confirmed via docs fetch in this
-  session (search/fetch access to that specific page was intermittently unavailable). We rely on
-  the officially confirmed `compact` CLI (installed via the curl script above) as the primary,
-  verified compile path in `scripts/bootstrap.sh` and CI; the npm package is added to
-  `packages/contracts/package.json` per the brief's explicit instruction but is not load-bearing
-  for the build (the `compact` CLI is).
+- The build environment has npm-registry and Docker Hub access but **no access to
+  `github.com`/`api.github.com`** (confirmed: `curl` to both hangs/refuses). Since
+  `fetch-compactc` downloads the actual `compactc` binary from a GitHub release, **the Compact
+  compiler could not actually be fetched or run in this environment**, so `ballot.compact` was
+  never compiled here and `packages/contracts/managed/` was never generated or exercised.
+  `npm run compile:contracts` must be run for the first time on a machine with GitHub access
+  (any normal dev machine/CI runner) before `npm run test:contracts` or `npm run build` will
+  pass. Everything in `ballot.compact`, `witnesses.ts`, and the vitest suite is written against
+  the real, verified stdlib/runtime APIs above; only the actual compiler invocation is unverified.
 - Live `docker compose up` against the real `midnightntwrk/proof-server:8.1.0` image and a real
-  `preprod` deployment were not exercised in this environment (no outbound Docker Hub/registry
-  access here); compose files are written to the documented contract (port 6300, healthcheck,
-  `undeployed` local network) and should be validated with `npm run docker:up` on a machine with
-  registry access. Flagged again in `CONTEXT.md`.
+  `preprod` deployment were not exercised for the same reason the compiler couldn't run (no
+  compiled contract to deploy); Docker Hub itself is reachable and the server/client images do
+  build and run in this environment (see `docs/TASKS.md` for what was actually verified vs. not).
+  Flagged again in `CONTEXT.md`.

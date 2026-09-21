@@ -1,0 +1,142 @@
+// Midnight Ballot — private, eligibility-gated voting with a publicly
+// verifiable tally. Full design rationale in docs/CONTRACT_SPEC.md and
+// docs/THREAT_MODEL.md; API facts this file relies on are sourced in
+// docs/DECISIONS.md.
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+// ==== Phase machine ====
+// Registration -> Voting -> Closed. Every circuit below asserts the phase
+// it requires; there is no way to skip or re-open a phase.
+export enum Phase { Registration, Voting, Closed }
+
+// ==== Public ledger state ====
+// Only the fields below are ever visible on-chain — see docs/THREAT_MODEL.md
+// for what each one does and does NOT leak.
+export ledger organizerKey: Bytes<32>;                    // commitment to the organizer's secret key
+export ledger pollId: Bytes<32>;                           // domain-separation tag baked into every nullifier
+export ledger phase: Phase;
+export ledger optionCount: Uint<2..4>;                     // number of valid options
+// Commitment allowlist. HistoricMerkleTree (not plain MerkleTree) so a path
+// computed against an older root stays valid after later registrations —
+// see "Why HistoricMerkleTree, not MerkleTree" in docs/ARCHITECTURE.md.
+export ledger voters: HistoricMerkleTree<10, Bytes<32>>;
+export ledger nullifiers: Set<Bytes<32>>;                  // one entry per vote cast; membership = "already voted"
+export ledger tally0: Counter;
+export ledger tally1: Counter;
+export ledger tally2: Counter;
+export ledger tally3: Counter;
+
+// ==== Witnesses ====
+// Implemented in witnesses.ts against the caller's local PrivateState.
+// Never executed on-chain, never sent to the server — see
+// docs/WALLET_INTEGRATION.md. Exactly one of these resolves to a real
+// secret for any given caller: a voter's wallet only ever calls castVote
+// (uses voterSecret), the organizer's wallet only ever calls
+// registerVoter/openVoting/closeVoting (uses organizerSecretKey).
+witness voterSecret(): Bytes<32>;
+witness organizerSecretKey(): Bytes<32>;
+
+// Derives the public commitment for a given secret. Pure (no ledger reads),
+// so the exact same computation can run off-chain (client rebuilds its own
+// commitment to compute a Merkle path — see docs/API.md
+// GET /polls/:id/commitments) and on-chain, with identical output.
+export pure circuit commitmentFor(secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "ballot:commitment"), secret]);
+}
+
+// Derives the nullifier for a given secret + poll. Domain-separated from
+// commitmentFor (different tag, different arity) so a nullifier can never be
+// linked back to a commitment, and separated per-poll via `poll` so the same
+// voter secret produces an unlinkable nullifier in a different poll.
+export pure circuit nullifierFor(secret: Bytes<32>, poll: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pad(32, "ballot:nullifier"), secret, poll]);
+}
+
+// Derives the organizer authority commitment for a given secret key. Same
+// pattern as the official bulletin-board tutorial's owner/publicKey check.
+export pure circuit organizerKeyFor(secretKey: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "ballot:organizer"), secretKey]);
+}
+
+constructor(organizerKeyCommitment: Bytes<32>, pollIdSeed: Bytes<32>, initialOptionCount: Uint<2..4>) {
+  organizerKey = disclose(organizerKeyCommitment);
+  pollId = disclose(pollIdSeed);
+  optionCount = disclose(initialOptionCount);
+  phase = Phase.Registration;
+}
+
+// Registers one eligible voter's commitment. Organizer-only, Registration
+// phase only. `commitment` is already a hiding hash the voter generated
+// off-chain (see commitmentFor) — this circuit never learns or discloses a
+// real-world identity, only the hash.
+//
+// Failure modes: registration already closed; caller cannot prove they are
+// the organizer.
+export circuit registerVoter(commitment: Bytes<32>): [] {
+  assert(phase == Phase.Registration, "registration is closed");
+  assert(organizerKeyFor(organizerSecretKey()) == organizerKey, "caller is not the organizer");
+  voters.insert(disclose(commitment));
+}
+
+// Organizer-only phase transition. Freezes the allowlist: no further
+// registerVoter calls are possible once voting opens, so the eligible set
+// is well-defined for the whole poll.
+//
+// Failure modes: voting already opened or closed; caller is not the organizer.
+export circuit openVoting(): [] {
+  assert(phase == Phase.Registration, "voting already opened");
+  assert(organizerKeyFor(organizerSecretKey()) == organizerKey, "caller is not the organizer");
+  phase = Phase.Voting;
+}
+
+// Organizer-only phase transition. Finalizes tallies.
+//
+// Failure modes: voting is not currently open; caller is not the organizer.
+export circuit closeVoting(): [] {
+  assert(phase == Phase.Voting, "voting is not open");
+  assert(organizerKeyFor(organizerSecretKey()) == organizerKey, "caller is not the organizer");
+  phase = Phase.Closed;
+}
+
+// Casts one vote. `path` is a witness-supplied Merkle path the caller
+// computed off-chain (see docs/API.md GET /polls/:id/commitments) proving
+// their commitment is a member of `voters`. Discloses only the nullifier
+// and the incremented tally counter — never the commitment, secret, or path.
+//
+// Failure modes: voting not open; option out of range; path does not match
+// the caller's own commitment (see the security note below); commitment is
+// not a registered member; this credential already voted.
+export circuit castVote(option: Uint<0..3>, path: MerkleTreePath<10, Bytes<32>>): [] {
+  assert(phase == Phase.Voting, "voting is not open");
+  assert(option < optionCount, "invalid option");
+
+  const secret = voterSecret();
+  const commitment = commitmentFor(secret);
+
+  // SECURITY: bind the witness-supplied path to the commitment being
+  // checked BEFORE verifying it against the tree root. Without this assert,
+  // ANY registered member's path would satisfy ANY caller's check, because
+  // merkleTreePathRoot only hashes the path's own (attacker-controlled,
+  // unconstrained) leaf field — it does not itself prove the leaf equals
+  // `commitment`. This is the exact soundness bug found and fixed in the
+  // official midnight-expert PrivateVoting.compact example; see
+  // docs/DECISIONS.md.
+  assert(path.leaf == commitment, "path does not match commitment");
+  assert(voters.checkRoot(merkleTreePathRoot(path)), "not a registered voter");
+
+  const nullifier = nullifierFor(secret, pollId);
+  assert(!nullifiers.member(nullifier), "already voted");
+  nullifiers.insert(disclose(nullifier));
+
+  if (option == 0) {
+    tally0.increment(1);
+  } else if (option == 1) {
+    tally1.increment(1);
+  } else if (option == 2) {
+    tally2.increment(1);
+  } else {
+    tally3.increment(1);
+  }
+}
