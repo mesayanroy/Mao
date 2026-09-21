@@ -1,0 +1,31 @@
+# Production overrides: pinned image tags, restart policies, resource
+# limits, no source bind mounts. Usage: see docs/DEPLOYMENT.md.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  proof-server:
+    image: midnightntwrk/proof-server:8.1.0
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2g
+
+  server:
+    image: ${SERVER_IMAGE:-ghcr.io/OWNER/midnight-ballot-server:latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512m
+
+  client:
+    image: ${CLIENT_IMAGE:-ghcr.io/OWNER/midnight-ballot-client:latest}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128m

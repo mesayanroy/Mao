@@ -317,6 +317,29 @@ installed packages) surfaced and fixed several bugs no amount of docs-reading wo
   has `networkId`. `packages/client/src/hooks/useWallet.ts` was rewritten against these real
   types instead of the hand-rolled approximation from the first pass.
 
+## Docker verification (what was and wasn't possible in this sandbox)
+
+Confirmed by directly testing: `docker build` RUN steps have **no network access** in this
+sandbox (`docker pull` of base images works via the daemon, but `npm ci`/`curl` *inside* a
+building container times out after ~140s — tested directly with a throwaway Dockerfile). So a
+full `docker compose build` of the server/client images could not be executed end-to-end here.
+What *was* verified for real:
+- `docker compose -f docker-compose.yml config` and the `-f docker-compose.prod.yml` merge both
+  resolve correctly — this caught and fixed a real YAML bug (a `healthcheck.test` array using
+  backslash-escaped single quotes inside a single-quoted YAML scalar, which is invalid YAML;
+  switched to double-quoted).
+- `docker build --check` (BuildKit's Dockerfile linter, doesn't execute `RUN` steps) passes
+  clean for both `packages/server/Dockerfile` and `packages/client/Dockerfile`.
+- Both Dockerfiles' `deps` stage installs from the workspace root, and their `build` stage
+  `COPY`s `packages/contracts` (including any pre-compiled `managed/` the host already produced
+  — `.dockerignore` does not exclude it) before building `shared` then `server`/`client`, so the
+  documented flow (`npm run compile:contracts` on the host, *then* `docker build`) is structurally
+  consistent with everything else verified in this session (the same "missing managed/" error
+  would block `tsc` inside the container exactly as it did in every other package here).
+- Not verified: an actual full image build and `docker compose up` bringing all three services to
+  healthy. Do this on a machine with normal network access before first deploy — see
+  docs/DEPLOYMENT.md.
+
 ## Open items / unverified at build time
 
 - The build environment has npm-registry and Docker Hub access but **no access to

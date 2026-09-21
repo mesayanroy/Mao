@@ -33,8 +33,18 @@ Tracks build progress against the execution plan. Update as phases complete.
       against the real `@midnight-ntwrk/dapp-connector-api` package (downloaded and read
       directly) instead of a hand-rolled approximation of `window.midnight`'s shape. See
       docs/DECISIONS.md "Real bugs found and fixed by actually running the build/tests".
-- [ ] 8. Docker: Dockerfiles, nginx, compose (dev + prod), verify healthy
-- [ ] 9. CI/CD workflows
+- [x] 8. Docker: Dockerfiles, nginx, compose (dev + prod). Verified: `docker compose config`
+      (both files, found and fixed a real YAML healthcheck syntax bug) and `docker build --check`
+      (both Dockerfiles, clean). **Not verified**: this sandbox's Docker daemon has no network
+      access inside build `RUN` steps (confirmed directly), so a full image build / `docker
+      compose up --build` bringing all services healthy needs to happen on a normal dev machine
+      or CI runner — see docs/DECISIONS.md "Docker verification".
+- [x] 9. CI/CD workflows (`ci.yml`: lint/compile/typecheck/test/build/docker-build/secret-scan/
+      audit; `cd.yml`: build+push GHCR images on main/tags, optional SSH deploy gated on secrets
+      being set; PR template; Dependabot config). Not executable in this sandbox (needs a real
+      GitHub Actions runner with GitHub/registry network access, which this sandbox lacks — see
+      docs/DECISIONS.md); written directly against the same verified npm scripts
+      (`compile:contracts`, `test:contracts`, `test:server`, `build`) already exercised locally.
 - [ ] 10. Final pass: typecheck/lint/test/build, docs-match-code check, secret scan
 
 ## Future improvements (explicitly out of scope for MVP)
