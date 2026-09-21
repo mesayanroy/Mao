@@ -7,6 +7,7 @@
 // / onchain-runtime types — see docs/DECISIONS.md.
 import {
   CompactTypeBytes,
+  CompactTypeField,
   CompactTypeMerkleTreePath,
   StateBoundedMerkleTree,
   type AlignedValue,
@@ -48,4 +49,25 @@ export function buildVoterPath(
 
   const pathValue = tree.pathForLeaf(BigInt(index), toAligned(commitment));
   return pathType.fromValue(pathValue.value);
+}
+
+/**
+ * Recomputes the tree root as a hex-encoded field element, for display /
+ * public-verifiability purposes (GET /api/v1/polls/:id/tally's
+ * `merkleRoot`). Independent of the generated Ledger type's own `voters`
+ * accessor (see docs/DECISIONS.md) — rebuilds from the same public
+ * commitment list the client uses for paths, so it's always consistent with
+ * what `buildVoterPath` sees.
+ */
+export function computeVotersRoot(commitments: readonly Uint8Array[]): string {
+  let tree = new StateBoundedMerkleTree(VOTER_TREE_DEPTH);
+  commitments.forEach((c, i) => {
+    tree = tree.update(BigInt(i), toAligned(c));
+  });
+  tree = tree.rehash();
+  const root = tree.root();
+  if (!root) {
+    return '';
+  }
+  return CompactTypeField.fromValue(root.value).toString(16);
 }

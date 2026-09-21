@@ -28,9 +28,23 @@ verbatim from an official page, it is marked **[inferred]** with its source.
 Node.js: 22.17.1+ (from midnight-docs repo requirements). Docker + Docker Compose v2: required
 for `proof-server` and local `undeployed` network.
 
-Package.json dependency versions are pinned to caret ranges anchored on the above majors/minors
-(e.g. `^4.1.1` for midnight-js packages, `^1.2.0` for wallet-sdk packages, `^8.0.3` for
-`@midnight-ntwrk/ledger-v8`) since docs do not publish per-subpackage patch numbers individually.
+Package.json dependency versions are pinned to caret ranges anchored on the *actual latest npm
+publish* of each package (checked directly against the registry, not the matrix's rounder
+numbers, which run behind — e.g. matrix says ledger-v8 `8.0.3`, npm's latest is `8.1.2`; matrix
+says Wallet SDK `1.2.0`, but that's the barrel package's own version — each wallet-sdk-* sub-
+package has its own independent semver, e.g. `wallet-sdk-facade@4.1.0`, `wallet-sdk-hd@3.0.3`).
+**All workspace packages pin the exact same version of any shared dependency** (especially
+`@midnight-ntwrk/ledger-v8` and `@midnight-ntwrk/compact-runtime`) — npm otherwise installs two
+physically separate copies for two different semver ranges of the same package, and TypeScript
+then treats their same-named exported classes as structurally distinct (a real error hit and
+fixed during this build — see the `packages/server` commit). `@midnight-ntwrk/ledger-v8` in
+particular is pinned to the **exact** version `8.1.0` (no `^`), not a caret range: the
+`wallet-sdk-*` family transitively depends on `^8.1.0` and npm hoists the root copy to the
+lowest version satisfying that range (`8.1.0`), while a caret range on `ledger-v8` in `shared`/
+`server` themselves lets npm resolve *their* copy to the newest matching patch (`8.1.2`) instead
+— two different resolutions for the "same" range, both technically valid semver, both installed
+side by side. Exact-pinning forces one copy. This is worth knowing for *any* future dependency
+this repo adds that the wallet-sdk-* family also depends on.
 
 ## Compact language
 
@@ -239,6 +253,22 @@ subscriptionURL, webSocketImpl?)`), `@midnight-ntwrk/midnight-js-level-private-s
 `new FetchZkConfigProvider(baseURL, fetchFunc?)` — not a factory function as an earlier docs
 summary implied), and `@midnight-ntwrk/midnight-js-dapp-connector-proof-provider`
 (`dappConnectorProofProvider(api, zkConfigProvider, costModel): Promise<ProofProvider>`).
+
+## Inferred (not directly confirmed): HistoricMerkleTree ledger field shape
+
+The generated `Ledger` type's collection-field convention was confirmed for `Map`/`Set` (both
+expose `isEmpty()/size()/member()/[Symbol.iterator]()`, confirmed by downloading the real
+compiled `@midnight-ntwrk/midnight-did-contract` package — see above). No published contract
+package inspected in this session uses a `MerkleTree`/`HistoricMerkleTree` ledger field, so its
+exact generated shape (does it expose `[Symbol.iterator]()` over leaves? a `.root()` accessor?)
+is *inferred by analogy* to the Map/Set convention, not independently confirmed. `packages/
+server/src/services/indexer.service.ts`'s `getCommitments` assumes `ledger.voters` is iterable
+in insertion order. To avoid depending on an unconfirmed `.root()` shape at all, the public
+Merkle root shown in `GET /api/v1/polls/:id/tally` is instead recomputed server-side from that
+same commitment list via `computeVotersRoot` in `packages/shared/src/merkle.ts`, using only the
+already-confirmed `StateBoundedMerkleTree`/`CompactTypeField` primitives — so at most one line
+(`for (const leaf of ledger.voters)`) needs adjusting after a real compile, not the whole
+tally/commitments read path.
 
 ## Open items / unverified at build time
 

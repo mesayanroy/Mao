@@ -15,7 +15,13 @@ Tracks build progress against the execution plan. Update as phases complete.
       `schemas.ts`, `merkle.ts`, `providers.ts`, `credential.ts`, `index.ts` fully verified;
       `ballot-client.ts`'s `CompiledContract.make(...)` call has two documented `as never`
       escapes — see its file header and docs/DECISIONS.md)
-- [ ] 6. Server: routes, services, wallet module, store, tests
+- [x] 6. Server: routes, services, wallet module, store, tests — **actually executed** with
+      `npm test` (8/8 passing, real Fastify `.inject()` HTTP tests) and `npm run typecheck`
+      against real installed deps (both verified using a temporary stub for the not-yet-compiled
+      `@midnight-ballot/contracts` module, deleted afterward — see docs/DECISIONS.md). Caught and
+      fixed two real bugs this way: Fastify v5 needs `loggerInstance` (not `logger`) to accept a
+      pre-built pino instance, and `@midnight-ntwrk/ledger-v8` needs an *exact* version pin across
+      workspaces or npm installs duplicate, type-incompatible copies.
 - [ ] 7. Client: theme, wallet picker, hooks, four pages
 - [ ] 8. Docker: Dockerfiles, nginx, compose (dev + prod), verify healthy
 - [ ] 9. CI/CD workflows
