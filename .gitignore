@@ -1,0 +1,33 @@
+node_modules/
+dist/
+build/
+.env
+*.local
+
+# Compact compiler output (regenerate with `npm run compile:contracts`)
+packages/contracts/managed/
+packages/client/public/zk/*
+!packages/client/public/zk/.gitkeep
+
+# Server local data / private state
+packages/server/data/
+*.private-state/
+.leveldb/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Compact compiler / toolchain local install marker
+.compact/

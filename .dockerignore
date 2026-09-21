@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.git
+.github
+.env
+*.local
+docs
+*.md
+!README.md
+coverage
+**/coverage
+.vscode
+.idea
+packages/contracts/test
+packages/server/test
+packages/client/src/**/*.test.*
+**/*.log
