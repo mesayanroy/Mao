@@ -10,7 +10,11 @@ Tracks build progress against the execution plan. Update as phases complete.
       + `tsc`, see docs/DECISIONS.md). **Not yet compiled/run** — this sandbox has no GitHub
       access, which `fetch-compactc` needs; run `npm run compile:contracts && npm run
       test:contracts` on a normal dev machine/CI runner before trusting it green.
-- [ ] 5. Shared: config, providers, `ballot-client`, credential, merkle
+- [x] 5. Shared: config, providers, `ballot-client`, credential, merkle — `npm run typecheck -w
+      packages/shared` passes clean against real installed deps (`config.ts`, `types.ts`,
+      `schemas.ts`, `merkle.ts`, `providers.ts`, `credential.ts`, `index.ts` fully verified;
+      `ballot-client.ts`'s `CompiledContract.make(...)` call has two documented `as never`
+      escapes — see its file header and docs/DECISIONS.md)
 - [ ] 6. Server: routes, services, wallet module, store, tests
 - [ ] 7. Client: theme, wallet picker, hooks, four pages
 - [ ] 8. Docker: Dockerfiles, nginx, compose (dev + prod), verify healthy
