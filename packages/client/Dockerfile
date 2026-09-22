@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:22-slim AS deps
+FROM node:26-slim AS deps
 WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY packages/shared/package.json packages/shared/package.json
@@ -8,7 +8,7 @@ COPY packages/server/package.json packages/server/package.json
 COPY packages/client/package.json packages/client/package.json
 RUN npm ci
 
-FROM node:22-slim AS build
+FROM node:26-slim AS build
 WORKDIR /repo
 COPY --from=deps /repo/node_modules ./node_modules
 COPY package.json tsconfig.base.json ./
