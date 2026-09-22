@@ -1,4 +1,4 @@
-# Midnight Ballot
+# Mao 
 
 Private, eligibility-gated voting with publicly verifiable tallies — built on
 [Midnight Network](https://midnight.network). Only allowlisted members can vote, nobody can
