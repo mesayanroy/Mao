@@ -16,7 +16,7 @@
     "@fastify/helmet": "^12.0.1",
     "@fastify/rate-limit": "^10.1.1",
     "@maao/shared": "*",
-    "@midnight-ntwrk/ledger-v8": "8.1.0",
+    "@midnight-ntwrk/ledger-v8": "8.1.2",
     "@midnightntwrk/wallet-sdk-dust-wallet": "^4.2.0",
     "@midnightntwrk/wallet-sdk-facade": "^4.1.0",
     "@midnightntwrk/wallet-sdk-hd": "^3.0.3",
