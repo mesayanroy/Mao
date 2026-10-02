@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Multi-stage build: deps -> build -> runtime. See docs/DEPLOYMENT.md.
 
-FROM node:22-slim AS deps
+FROM node:26-slim AS deps
 WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY packages/shared/package.json packages/shared/package.json
@@ -10,7 +10,7 @@ COPY packages/server/package.json packages/server/package.json
 COPY packages/client/package.json packages/client/package.json
 RUN npm ci
 
-FROM node:22-slim AS build
+FROM node:26-slim AS build
 WORKDIR /repo
 COPY --from=deps /repo/node_modules ./node_modules
 COPY package.json tsconfig.base.json ./
@@ -26,7 +26,7 @@ COPY packages/server packages/server
 RUN npm run build -w packages/shared
 RUN npm run build -w packages/server
 
-FROM node:22-slim AS runtime
+FROM node:26-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 RUN groupadd --system --gid 1001 midnight && \
