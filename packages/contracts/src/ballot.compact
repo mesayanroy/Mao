@@ -1,4 +1,4 @@
-// Midnight Ballot — private, eligibility-gated voting with a publicly
+// Maao — private, eligibility-gated voting with a publicly
 // verifiable tally. Full design rationale in docs/CONTRACT_SPEC.md and
 // docs/THREAT_MODEL.md; API facts this file relies on are sourced in
 // docs/DECISIONS.md.

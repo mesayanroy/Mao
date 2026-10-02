@@ -1,4 +1,4 @@
-name: midnight-ballot
+name: maao
 
 services:
   # Local proof server for organizer CLI scripts only — the browser client

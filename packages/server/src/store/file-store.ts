@@ -4,7 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import type { PollMetadata } from '@midnight-ballot/shared';
+import type { PollMetadata } from '@maao/shared';
 import type { PollRepository } from './poll.repository.js';
 
 interface FileStoreRecord {

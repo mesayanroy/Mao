@@ -292,7 +292,7 @@ installed packages) surfaced and fixed several bugs no amount of docs-reading wo
   `isomorphic-ws`'s *browser* build doesn't export a `WebSocket` binding, so `vite build` failed
   with `"WebSocket" is not exported by ".../isomorphic-ws/browser.js"`. Fixed by moving
   `providers.ts` out of the main export and exposing it only via the subpath
-  `@midnight-ballot/shared/providers` (added to `package.json`'s `exports` map) — server and CLI
+  `@maao/shared/providers` (added to `package.json`'s `exports` map) — server and CLI
   scripts import that subpath directly; the client never touches it. Caught by an actual `npx
   vite build`, not typecheck (Node built-ins get silently externalized by Vite with a warning,
   not an error — only the named-export mismatch failed the build).
@@ -305,7 +305,7 @@ installed packages) surfaced and fixed several bugs no amount of docs-reading wo
   inside its SWC-based codegen) — dropped it once a real build showed `esnext` alone was enough
   (top-level await is native to esnext output, so the plugin was redundant here anyway).
 - **Two files imported `createBallotPrivateState`/`BallotPrivateState` from
-  `@midnight-ballot/shared`**: that type/function actually lives in `@midnight-ballot/contracts`
+  `@maao/shared`**: that type/function actually lives in `@maao/contracts`
   (`witnesses.ts`), re-exported via its own `index.ts` — `shared` never re-exported it. Caught by
   `tsc` on `packages/client` (`scripts/deploy-contract.ts` and `register-voter.ts` had the same
   bug, found by grepping for the same import once the client error surfaced).

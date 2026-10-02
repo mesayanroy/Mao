@@ -34,7 +34,7 @@ RUN groupadd --system --gid 1001 midnight && \
 COPY package.json package-lock.json ./
 COPY packages/shared/package.json packages/shared/package.json
 COPY packages/server/package.json packages/server/package.json
-RUN npm ci --omit=dev --workspace=@midnight-ballot/shared --workspace=@midnight-ballot/server
+RUN npm ci --omit=dev --workspace=@maao/shared --workspace=@maao/server
 COPY --from=build /repo/packages/shared/dist packages/shared/dist
 COPY --from=build /repo/packages/server/dist packages/server/dist
 RUN mkdir -p /app/data && chown -R midnight:midnight /app

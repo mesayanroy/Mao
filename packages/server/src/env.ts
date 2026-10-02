@@ -1,7 +1,7 @@
 // Server environment, validated once at boot. See docs/DEPLOYMENT.md for
 // the full variable reference and .env.example for defaults.
 import { z } from 'zod';
-import { isNetworkId } from '@midnight-ballot/shared';
+import { isNetworkId } from '@maao/shared';
 
 const envSchema = z.object({
   NETWORK_ID: z.string().refine(isNetworkId, 'must be undeployed|preview|preprod|mainnet'),

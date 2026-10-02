@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import type { PollMetadata, PollTally } from '@midnight-ballot/shared';
+import type { PollMetadata, PollTally } from '@maao/shared';
 import { api } from '../lib/api';
 
 export interface PollData {

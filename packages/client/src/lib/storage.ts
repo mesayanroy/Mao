@@ -3,10 +3,10 @@
 // production build should use the wallet's own encrypted private-state
 // storage instead (packages/shared/src/providers.ts's private state
 // provider pattern, adapted for a browser IndexedDB backend).
-import { bytesToHex, hexToBytes, type Credential } from '@midnight-ballot/shared';
+import { bytesToHex, hexToBytes, type Credential } from '@maao/shared';
 
 function keyFor(pollId: string): string {
-  return `midnight-ballot:credential:${pollId}`;
+  return `maao:credential:${pollId}`;
 }
 
 export function saveCredential(pollId: string, credential: Credential): void {
@@ -24,7 +24,7 @@ export function loadCredential(pollId: string): Credential | null {
 }
 
 function organizerKeyStorageKey(pollId: string): string {
-  return `midnight-ballot:organizer-key:${pollId}`;
+  return `maao:organizer-key:${pollId}`;
 }
 
 export function saveOrganizerSecret(pollId: string, secretKey: Uint8Array): void {

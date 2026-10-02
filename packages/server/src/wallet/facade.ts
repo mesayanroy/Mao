@@ -13,7 +13,7 @@ import { WalletFacade, type DefaultConfiguration } from '@midnightntwrk/wallet-s
 import { ShieldedWallet } from '@midnightntwrk/wallet-sdk-shielded';
 import { DustWallet } from '@midnightntwrk/wallet-sdk-dust-wallet';
 import { UnshieldedWallet, createKeystore, PublicKey } from '@midnightntwrk/wallet-sdk-unshielded-wallet';
-import type { NetworkEndpoints } from '@midnight-ballot/shared';
+import type { NetworkEndpoints } from '@maao/shared';
 import { deriveSponsorKeys } from './keys.js';
 
 export interface SponsorWallet {

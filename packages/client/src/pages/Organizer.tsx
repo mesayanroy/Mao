@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { randomBytes as cryptoRandomBytes } from '../lib/random';
-import { createBallotPrivateState } from '@midnight-ballot/contracts';
-import { organizerKeyFromSecret, hexToBytes } from '@midnight-ballot/shared';
+import { createBallotPrivateState } from '@maao/contracts';
+import { organizerKeyFromSecret, hexToBytes } from '@maao/shared';
 import { useWallet } from '../hooks/useWallet';
 import { useBallot } from '../hooks/useBallot';
 import { WalletStatus } from '../components/WalletStatus';
-import { Card } from '../components/Card';
-import { Field, TextInput } from '../components/Field';
 import { Button } from '../components/Button';
 import { Notice } from '../components/Notice';
 import { TxStatus, type TxState } from '../components/TxStatus';
@@ -72,56 +70,118 @@ export function Organizer() {
   }
 
   return (
-    <div className="stack">
-      <h1>Organizer</h1>
+    <div className="max-w-[900px] mx-auto px-6 py-12 space-y-8">
+      <div>
+        <h1 className="text-3xl font-display font-bold tracking-tight">Poll Organizer Dashboard</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          Deploy ballot contracts to Midnight, allowlist voter commitment hashes, and control voting lifecycle phases.
+        </p>
+      </div>
+
       <WalletStatus status={status} onConnect={connect} />
 
       {!poll && (
-        <Card>
-          <h2>Create a poll</h2>
-          <div className="stack">
-            <Field label="Title">
-              <TextInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Approve Q3 budget" />
-            </Field>
-            <Field label="Options (2-4, comma-separated)">
-              <TextInput value={optionsText} onChange={(e) => setOptionsText(e.target.value)} />
-            </Field>
-            <Button onClick={handleDeploy} disabled={status.state !== 'connected' || !title || tx === 'proving' || tx === 'pending'}>
-              Deploy poll
+        <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-6">
+          <div className="border-b border-border/40 pb-4">
+            <h2 className="text-2xl font-display font-bold">Create New Poll</h2>
+            <p className="text-xs text-muted-foreground mt-1">Configure poll parameters and deploy the Compact smart contract.</p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Poll Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Q3 Governance Protocol Upgrade"
+                className="w-full h-11 px-4 rounded-xl bg-secondary/40 border border-border/60 focus:border-foreground text-foreground text-sm outline-none transition-all"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Options (2 to 4, comma-separated)</label>
+              <input
+                type="text"
+                value={optionsText}
+                onChange={(e) => setOptionsText(e.target.value)}
+                placeholder="Yes, No, Abstain"
+                className="w-full h-11 px-4 rounded-xl bg-secondary/40 border border-border/60 focus:border-foreground text-foreground text-sm outline-none transition-all font-mono text-xs"
+              />
+            </div>
+
+            <Button
+              onClick={handleDeploy}
+              disabled={status.state !== 'connected' || !title || tx === 'proving' || tx === 'pending'}
+              className="w-full rounded-full h-12 text-base bg-foreground hover:bg-foreground/90 text-background font-semibold"
+            >
+              {tx === 'proving' ? 'Proving Organizer Setup...' : tx === 'pending' ? 'Deploying to Midnight...' : 'Deploy Ballot Contract'}
             </Button>
           </div>
-        </Card>
+        </div>
       )}
 
       {poll && (
-        <Card>
-          <h2>Manage poll</h2>
-          <p style={{ wordBreak: 'break-all', color: 'var(--muted)' }}>Contract: {poll.contractAddress}</p>
-          <div className="stack">
-            <Field label="Voter commitment (paste what the voter sent you)">
-              <TextInput value={commitmentInput} onChange={(e) => setCommitmentInput(e.target.value)} placeholder="hex commitment" />
-            </Field>
-            <div className="row">
-              <Button
-                variant="secondary"
-                disabled={!commitmentInput}
-                onClick={() =>
-                  withOrganizer((secret) =>
-                    registerVoter(poll.contractAddress, poll.id, createBallotPrivateState(secret), hexToBytes(commitmentInput))
-                  )
-                }
-              >
-                Register voter
-              </Button>
-              <Button variant="secondary" onClick={() => withOrganizer((secret) => openVoting(poll.contractAddress, poll.id, createBallotPrivateState(secret)))}>
-                Open voting
-              </Button>
-              <Button variant="secondary" onClick={() => withOrganizer((secret) => closeVoting(poll.contractAddress, poll.id, createBallotPrivateState(secret)))}>
-                Close voting
-              </Button>
+        <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-6">
+          <div className="border-b border-border/40 pb-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-display font-bold">Manage Poll #{poll.id}</h2>
+              <span className="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                Active Contract
+              </span>
+            </div>
+            <code className="block mt-2 p-2 rounded bg-secondary/50 font-mono text-xs text-muted-foreground select-all break-all border border-border/40">
+              {poll.contractAddress}
+            </code>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Register Voter Commitment</label>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={commitmentInput}
+                  onChange={(e) => setCommitmentInput(e.target.value)}
+                  placeholder="Paste hex commitment sent by voter..."
+                  className="flex-1 h-11 px-4 rounded-xl bg-secondary/40 border border-border/60 focus:border-foreground text-foreground text-xs font-mono outline-none transition-all"
+                />
+                <Button
+                  variant="secondary"
+                  disabled={!commitmentInput}
+                  onClick={() =>
+                    withOrganizer((secret) =>
+                      registerVoter(poll.contractAddress, poll.id, createBallotPrivateState(secret), hexToBytes(commitmentInput))
+                    )
+                  }
+                  className="rounded-xl px-5 h-11 font-medium text-xs border border-border"
+                >
+                  Register Commitment
+                </Button>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-border/40 space-y-3">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Poll Phase Control</div>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => withOrganizer((secret) => openVoting(poll.contractAddress, poll.id, createBallotPrivateState(secret)))}
+                  className="rounded-full px-6 h-10 text-xs font-medium border-emerald-500/40 hover:bg-emerald-500/10 text-emerald-400"
+                >
+                  Open Voting Phase
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => withOrganizer((secret) => closeVoting(poll.contractAddress, poll.id, createBallotPrivateState(secret)))}
+                  className="rounded-full px-6 h-10 text-xs font-medium border-rose-500/40 hover:bg-rose-500/10 text-rose-400"
+                >
+                  Close Poll Tally
+                </Button>
+              </div>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       <TxStatus state={tx} message={error ?? undefined} />

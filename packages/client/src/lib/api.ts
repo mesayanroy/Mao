@@ -1,6 +1,6 @@
 // Thin client for the server's read-only API — see docs/API.md. Never
 // sends a voter secret; only public data (poll metadata, commitments).
-import type { PollMetadata, PollTally, PollCommitments, ServerConfig, ApiResult } from '@midnight-ballot/shared';
+import type { PollMetadata, PollTally, PollCommitments, ServerConfig, ApiResult } from '@maao/shared';
 import { clientConfig } from './config';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

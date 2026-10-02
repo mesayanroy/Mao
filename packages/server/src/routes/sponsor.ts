@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { pollIdParamSchema, sponsorRequestSchema } from '@midnight-ballot/shared';
+import { pollIdParamSchema, sponsorRequestSchema } from '@maao/shared';
 import type { SponsorService } from '../services/sponsor.service.js';
 import { parseOrThrow } from '../middleware/validate.js';
 import { sponsorRateLimitConfig } from '../middleware/rate-limit.js';

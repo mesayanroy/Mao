@@ -1,4 +1,4 @@
-// Public surface of @midnight-ballot/contracts, consumed by
+// Public surface of @maao/contracts, consumed by
 // packages/shared's ballot-client.ts. Re-exports the witnesses (safe: pure
 // TypeScript, no compiled artifact needed) and the compactc-generated
 // contract module (only resolvable after `npm run compile:contracts` — see

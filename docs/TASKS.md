@@ -18,16 +18,16 @@ Tracks build progress against the execution plan. Update as phases complete.
 - [x] 6. Server: routes, services, wallet module, store, tests — **actually executed** with
       `npm test` (8/8 passing, real Fastify `.inject()` HTTP tests) and `npm run typecheck`
       against real installed deps (both verified using a temporary stub for the not-yet-compiled
-      `@midnight-ballot/contracts` module, deleted afterward — see docs/DECISIONS.md). Caught and
+      `@maao/contracts` module, deleted afterward — see docs/DECISIONS.md). Caught and
       fixed two real bugs this way: Fastify v5 needs `loggerInstance` (not `logger`) to accept a
       pre-built pino instance, and `@midnight-ntwrk/ledger-v8` needs an *exact* version pin across
       workspaces or npm installs duplicate, type-incompatible copies.
 - [x] 7. Client: theme, wallet picker, hooks, four pages — **actually built** with a real `npx
       vite build` (not just typechecked) against real installed deps, using a temporary stub for
-      the not-yet-compiled `@midnight-ballot/contracts` module (deleted afterward). Caught and
+      the not-yet-compiled `@maao/contracts` module (deleted afterward). Caught and
       fixed three real bugs this way: `packages/shared`'s barrel leaked Node-only `providers.ts`
       into the browser bundle (isomorphic-ws browser build breaks on it — moved to a
-      `@midnight-ballot/shared/providers` subpath export instead), `@midnight-ntwrk/ledger-v8`'s
+      `@maao/shared/providers` subpath export instead), `@midnight-ntwrk/ledger-v8`'s
       WASM needs `vite-plugin-wasm` + `esnext` build target, and two files imported
       `createBallotPrivateState` from the wrong package. `useWallet.ts` was also rewritten
       against the real `@midnight-ntwrk/dapp-connector-api` package (downloaded and read
@@ -47,7 +47,7 @@ Tracks build progress against the execution plan. Update as phases complete.
       (`compile:contracts`, `test:contracts`, `test:server`, `build`) already exercised locally.
 - [x] 10. Final pass: `npm run lint` passes clean across shared/server/client. `npm run
       typecheck`/`npm test`/`npm run build` at the repo root all fail at the same single,
-      documented point (`@midnight-ballot/contracts`'s compiled `managed/` output doesn't exist —
+      documented point (`@maao/contracts`'s compiled `managed/` output doesn't exist —
       the Compact compiler needs GitHub release access this sandbox doesn't have) — every package
       was already proven to typecheck/test/build cleanly *past* that point using a temporary stub
       (see docs/DECISIONS.md and docs/CONTEXT.md). Verified no `.env`, `node_modules`, or

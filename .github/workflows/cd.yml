@@ -51,7 +51,7 @@ jobs:
       - id: meta-server
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/midnight-ballot-server
+          images: ghcr.io/${{ github.repository_owner }}/maao-server
           tags: |
             type=sha,prefix=
             type=semver,pattern={{version}}
@@ -60,7 +60,7 @@ jobs:
       - id: meta-client
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/midnight-ballot-client
+          images: ghcr.io/${{ github.repository_owner }}/maao-client
           tags: |
             type=sha,prefix=
             type=semver,pattern={{version}}
@@ -101,6 +101,6 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd /opt/midnight-ballot
+            cd /opt/maao
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d

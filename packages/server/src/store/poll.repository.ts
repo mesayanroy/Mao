@@ -1,4 +1,4 @@
-import type { PollMetadata } from '@midnight-ballot/shared';
+import type { PollMetadata } from '@maao/shared';
 
 /**
  * Off-chain poll metadata store (title/options/contract address — never

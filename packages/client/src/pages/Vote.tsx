@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { createBallotPrivateState } from '@midnight-ballot/contracts';
-import { generateCredential, bytesToHex, type PollMetadata } from '@midnight-ballot/shared';
+import { createBallotPrivateState } from '@maao/contracts';
+import { generateCredential, bytesToHex, type PollMetadata } from '@maao/shared';
 import { useWallet } from '../hooks/useWallet';
 import { useBallot } from '../hooks/useBallot';
 import { WalletStatus } from '../components/WalletStatus';
-import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Notice } from '../components/Notice';
 import { TxStatus, type TxState } from '../components/TxStatus';
@@ -64,81 +63,125 @@ export function Vote() {
   }
 
   return (
-    <div className="stack">
-      <h1>Vote</h1>
+    <div className="max-w-[800px] mx-auto px-6 py-12 space-y-8">
+      <div>
+        <h1 className="text-3xl font-display font-bold tracking-tight">Cast Your Vote</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          Generate a zero-knowledge voter credential and submit an anonymous vote to the Maao smart contract.
+        </p>
+      </div>
+
       <WalletStatus status={status} onConnect={connect} />
 
       {!pollId && (
-        <Card>
-          <h2>Choose a poll</h2>
+        <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-4">
+          <h2 className="text-xl font-display font-semibold">Select an Active Poll</h2>
           {polls.length === 0 ? (
-            <Notice>No polls yet.</Notice>
+            <Notice>No polls registered yet. Check back soon or create one in the Organizer dashboard.</Notice>
           ) : (
-            <ul>
+            <div className="grid gap-3">
               {polls.map((p) => (
-                <li key={p.id}>
-                  <button
-                    onClick={() => setParams({ id: p.id })}
-                    style={{ background: 'none', border: 'none', color: 'var(--fg)', cursor: 'pointer', textDecoration: 'underline', padding: 0, font: 'inherit' }}
-                  >
-                    {p.title}
-                  </button>
-                </li>
+                <button
+                  key={p.id}
+                  onClick={() => setParams({ id: p.id })}
+                  className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-secondary/30 hover:bg-secondary/70 hover:border-foreground/30 transition-all text-left group"
+                >
+                  <div>
+                    <div className="font-medium text-foreground">{p.title}</div>
+                    <div className="text-xs text-muted-foreground font-mono mt-0.5">ID: {p.id}</div>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-medium uppercase bg-background border border-border text-foreground">
+                    {p.phase}
+                  </span>
+                </button>
               ))}
-            </ul>
+            </div>
           )}
-        </Card>
+        </div>
       )}
 
       {pollId && poll && (
-        <Card>
-          <h2>{poll.title}</h2>
-          <p>Phase: {poll.phase}</p>
+        <div className="bg-card border border-border/60 rounded-2xl p-6 space-y-6">
+          <div className="flex items-center justify-between border-b border-border/40 pb-4">
+            <div>
+              <h2 className="text-2xl font-display font-bold">{poll.title}</h2>
+              <div className="text-xs text-muted-foreground font-mono mt-0.5">Contract: {poll.contractAddress}</div>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
+              poll.phase === 'Voting'
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                : 'bg-muted text-muted-foreground border border-border'
+            }`}>
+              Phase: {poll.phase}
+            </span>
+          </div>
 
           {!credential && (
-            <div className="stack">
+            <div className="space-y-4">
               <Notice>
-                Generate a private credential to vote in this poll. Your secret never leaves this
-                browser — only its public commitment does, and only after you send it to the
-                organizer yourself.
+                Generate a private voter credential. Your voter secret stays 100% inside this browser — only its public commitment is shared with the organizer to get allowlisted.
               </Notice>
-              <Button onClick={handleGenerateCredential}>Generate credential</Button>
+              <Button onClick={handleGenerateCredential} className="rounded-full px-6">
+                Generate Voter Credential
+              </Button>
             </div>
           )}
 
           {credential && (
-            <div className="stack">
-              <Notice>
-                Send this commitment to the organizer to get registered (out-of-band, e.g. email
-                or chat):
-                <br />
-                <code style={{ wordBreak: 'break-all' }}>{bytesToHex(credential.commitment)}</code>
-              </Notice>
+            <div className="space-y-6">
+              <div className="p-4 rounded-xl bg-secondary/50 border border-border/50 space-y-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Your Public Commitment (Share with Organizer):</div>
+                <code className="block p-3 rounded-lg bg-background border border-border font-mono text-xs text-foreground select-all break-all">
+                  {bytesToHex(credential.commitment)}
+                </code>
+              </div>
 
               {poll.phase === 'Voting' && (
-                <div className="stack">
-                  <div className="row">
+                <div className="space-y-4">
+                  <div className="text-sm font-medium text-foreground">Select Ballot Option:</div>
+                  <div className="grid gap-3">
                     {poll.options.map((label, i) => (
-                      <label key={label} className="row" style={{ gap: 'var(--space-1)' }}>
+                      <label
+                        key={label}
+                        className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                          selectedOption === i
+                            ? 'bg-foreground text-background border-foreground font-medium'
+                            : 'bg-secondary/30 border-border/50 text-foreground hover:bg-secondary/60'
+                        }`}
+                      >
                         <input
                           type="radio"
                           name="option"
                           checked={selectedOption === i}
                           onChange={() => setSelectedOption(i)}
+                          className="sr-only"
                         />
-                        {label}
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                          selectedOption === i ? 'border-background bg-background' : 'border-muted-foreground'
+                        }`}>
+                          {selectedOption === i && <div className="w-2 h-2 rounded-full bg-foreground" />}
+                        </div>
+                        <span>{label}</span>
                       </label>
                     ))}
                   </div>
-                  <Button onClick={handleCastVote} disabled={status.state !== 'connected' || tx === 'proving' || tx === 'pending'}>
-                    Cast vote
+
+                  <Button
+                    onClick={handleCastVote}
+                    disabled={status.state !== 'connected' || tx === 'proving' || tx === 'pending'}
+                    className="w-full rounded-full h-12 text-base bg-foreground hover:bg-foreground/90 text-background font-semibold"
+                  >
+                    {tx === 'proving' ? 'Generating ZK Proof...' : tx === 'pending' ? 'Submitting to Midnight...' : 'Cast Anonymous Vote'}
                   </Button>
                 </div>
               )}
-              {poll.phase !== 'Voting' && <Notice>Voting is not currently open for this poll.</Notice>}
+
+              {poll.phase !== 'Voting' && (
+                <Notice>Voting is not currently open for this poll (Current phase: {poll.phase}).</Notice>
+              )}
             </div>
           )}
-        </Card>
+        </div>
       )}
 
       <TxStatus state={tx} message={error ?? undefined} />

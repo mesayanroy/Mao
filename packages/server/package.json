@@ -1,5 +1,5 @@
 {
-  "name": "@midnight-ballot/server",
+  "name": "@maao/server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "@fastify/cors": "^10.0.1",
     "@fastify/helmet": "^12.0.1",
     "@fastify/rate-limit": "^10.1.1",
-    "@midnight-ballot/shared": "*",
+    "@maao/shared": "*",
     "@midnight-ntwrk/ledger-v8": "8.1.0",
     "@midnightntwrk/wallet-sdk-dust-wallet": "^4.2.0",
     "@midnightntwrk/wallet-sdk-facade": "^4.1.0",

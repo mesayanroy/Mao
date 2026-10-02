@@ -5,9 +5,9 @@
 // Usage: npm run deploy:contract -- --title "Approve budget" --options Yes,No,Abstain
 import 'dotenv/config';
 import { randomBytes } from 'node:crypto';
-import { configureNetwork, resolveNetwork, deployBallot, organizerKeyFromSecret, bytesToHex, isNetworkId } from '@midnight-ballot/shared';
-import { createLocalProvingProviders } from '@midnight-ballot/shared/providers';
-import { createBallotPrivateState } from '@midnight-ballot/contracts';
+import { configureNetwork, resolveNetwork, deployBallot, organizerKeyFromSecret, bytesToHex, isNetworkId } from '@maao/shared';
+import { createLocalProvingProviders } from '@maao/shared/providers';
+import { createBallotPrivateState } from '@maao/contracts';
 
 function parseArgs(): { options: string[] } {
   const args = process.argv.slice(2);

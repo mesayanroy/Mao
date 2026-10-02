@@ -18,7 +18,7 @@
 ## VPS deploy (Docker)
 
 ```
-git clone <repo> && cd midnight-ballot
+git clone <repo> && cd maao
 cp .env.example .env   # fill in real values, especially NETWORK_ID=preprod
 docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d

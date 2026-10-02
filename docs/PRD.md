@@ -1,11 +1,11 @@
-# PRD — Midnight Ballot
+# PRD — Maao
 
 ## Problem
 
 Governance votes (DAOs, cooperatives, associations) need three properties simultaneously:
 only eligible members can vote, no one can see who voted or how, and anyone can verify the
 result was tallied correctly. Show-of-hands and centralized web forms give you at most one of
-the three. Midnight Ballot gives all three using ZK-gated eligibility + on-chain nullifiers +
+the three. Maao gives all three using ZK-gated eligibility + on-chain nullifiers +
 a publicly verifiable tally.
 
 ## Users

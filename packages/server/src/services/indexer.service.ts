@@ -8,7 +8,7 @@ import {
   type PollCommitments,
   type PollPhase,
   type PollTally
-} from '@midnight-ballot/shared';
+} from '@maao/shared';
 
 const PHASE_NAMES: readonly PollPhase[] = ['Registration', 'Voting', 'Closed'];
 

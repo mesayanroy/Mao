@@ -1,8 +1,31 @@
-# Mao (Midnight Ballot)
+# Maao
 
 Private, eligibility-gated voting with publicly verifiable tallies — built on [Midnight Network](https://midnight.network). Only allowlisted members can vote, nobody can tell who voted or how, anyone can verify the tally, and on-chain nullifiers block double voting.
 
 Read `docs/CONTEXT.md` for the full single-file project digest, or `docs/PRD.md` / `docs/ARCHITECTURE.md` / `docs/CONTRACT_SPEC.md` for the specifics.
+
+---
+
+## 🧪 Testers
+
+**Tester sheet:** https://docs.google.com/spreadsheets/d/1ygm5Zu_e05EzTtL7cVz3G_rr9JaG2aon-g9OzCLBCoE/edit?resourcekey=&gid=1539670642#gid=1539670642
+
+Run the steps in this order and log each one (pass/fail + notes) as a row in the sheet:
+
+| # | Role | Step | Expected result |
+|---|---|---|---|
+| 1 | Anyone | Open the app and connect a Midnight wallet (e.g. Lace) | Header shows **Connected** |
+| 2 | Organizer | *Organizer* page → create a poll (title + 2–4 options) → **Deploy** | Contract address shown; phase = Registration |
+| 3 | Voter | *Vote* page → generate a credential, copy the commitment hash | Secret stays in the browser; only the hash is shown |
+| 4 | Organizer | Register the voter's commitment | Commitment added to the allowlist |
+| 5 | Organizer | **Open voting** | Phase = Voting; no more registrations accepted |
+| 6 | Voter | Pick an option and cast the vote | Transaction succeeds; tally increments |
+| 7 | Voter | Try to vote again with the same credential | Rejected on-chain: `already voted` |
+| 8 | Unregistered | Try to vote with a credential that was never registered | Rejected: `not a registered voter` |
+| 9 | Organizer | **Close voting** | Phase = Closed; further votes rejected |
+| 10 | Anyone | *Results* page (no wallet) | Live tally shown; `totalVotes == nullifierCount` |
+
+Follow Maao on X: [@Maao](https://x.com/SayanRo27946715)
 
 ---
 

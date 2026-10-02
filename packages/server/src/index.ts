@@ -1,6 +1,6 @@
 import { mnemonicToSeedSync } from 'bip39';
-import { configureNetwork, resolveNetwork } from '@midnight-ballot/shared';
-import { createIndexerProvider } from '@midnight-ballot/shared/providers';
+import { configureNetwork, resolveNetwork } from '@maao/shared';
+import { createIndexerProvider } from '@maao/shared/providers';
 import { loadEnv } from './env.js';
 import { createLogger } from './logger.js';
 import { buildApp } from './app.js';
@@ -46,7 +46,7 @@ async function main(): Promise<void> {
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
   await app.listen({ port: env.PORT, host: '0.0.0.0' });
-  logger.info({ port: env.PORT, networkId: env.NETWORK_ID }, 'midnight-ballot server listening');
+  logger.info({ port: env.PORT, networkId: env.NETWORK_ID }, 'maao server listening');
 }
 
 main().catch((err) => {

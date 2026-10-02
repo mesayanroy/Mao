@@ -2,7 +2,7 @@
 // wallet) or in an organizer's own local CLI run — see
 // docs/WALLET_INTEGRATION.md and docs/THREAT_MODEL.md. Never import this
 // module from packages/server.
-import { BallotContract } from '@midnight-ballot/contracts';
+import { BallotContract } from '@maao/contracts';
 
 export interface Credential {
   /** NEVER leaves the local device — store only in encrypted local state. */

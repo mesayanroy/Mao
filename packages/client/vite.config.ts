@@ -1,6 +1,8 @@
+import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wasm from 'vite-plugin-wasm';
+import tailwindcss from '@tailwindcss/vite';
 
 // wasm(): @midnight-ntwrk/ledger-v8 ships a WASM module using the "ESM
 // integration proposal for Wasm" that Vite/Rollup can't load natively
@@ -11,7 +13,12 @@ import wasm from 'vite-plugin-wasm';
 // was tried too but its Rollup output step crashed on this dependency tree
 // (also logged in docs/DECISIONS.md); esnext alone was sufficient.
 export default defineConfig({
-  plugins: [wasm(), react()],
+  plugins: [wasm(), react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  },
   server: {
     port: 5173
   },

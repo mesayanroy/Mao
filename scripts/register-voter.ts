@@ -6,9 +6,9 @@
 //
 // Usage: npm run register:voter -- --address <contract-address-hex> --commitment <hex> --organizer-key <hex>
 import 'dotenv/config';
-import { configureNetwork, resolveNetwork, connectBallot, hexToBytes, isNetworkId } from '@midnight-ballot/shared';
-import { createLocalProvingProviders } from '@midnight-ballot/shared/providers';
-import { createBallotPrivateState } from '@midnight-ballot/contracts';
+import { configureNetwork, resolveNetwork, connectBallot, hexToBytes, isNetworkId } from '@maao/shared';
+import { createLocalProvingProviders } from '@maao/shared/providers';
+import { createBallotPrivateState } from '@maao/contracts';
 
 function arg(name: string): string | undefined {
   const args = process.argv.slice(2);

@@ -13,8 +13,8 @@ import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-conf
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { dappConnectorProofProvider } from '@midnight-ntwrk/midnight-js-dapp-connector-proof-provider';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
-import { type BallotPrivateState } from '@midnight-ballot/contracts';
-import { resolveNetwork, connectBallot, deployBallot, buildVoterPath, commitmentFromSecret, hexToBytes } from '@midnight-ballot/shared';
+import { type BallotPrivateState } from '@maao/contracts';
+import { resolveNetwork, connectBallot, deployBallot, buildVoterPath, commitmentFromSecret, hexToBytes } from '@maao/shared';
 import { clientConfig } from '../lib/config';
 import { api } from '../lib/api';
 
@@ -28,7 +28,7 @@ export function useBallot(walletApi: ConnectedAPI | null) {
       publicDataProvider: indexerPublicDataProvider(endpoints.indexerUrl, endpoints.indexerWsUrl),
       zkConfigProvider,
       privateStateProvider: levelPrivateStateProvider({
-        privateStoragePasswordProvider: () => 'midnight-ballot-local',
+        privateStoragePasswordProvider: () => 'maao-local',
         accountId: 'browser'
       }),
       // costModel isn't available client-side ahead of a real transaction;

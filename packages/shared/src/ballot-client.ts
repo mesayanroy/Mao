@@ -19,9 +19,9 @@ import {
   type ContractProviders
 } from '@midnight-ntwrk/midnight-js-contracts';
 import type { PublicDataProvider } from '@midnight-ntwrk/midnight-js-types';
-import { BallotContract, ballotWitnesses, type BallotPrivateState } from '@midnight-ballot/contracts';
+import { BallotContract, ballotWitnesses, type BallotPrivateState } from '@maao/contracts';
 
-const BALLOT_CONTRACT_TAG = 'midnight-ballot:ballot';
+const BALLOT_CONTRACT_TAG = 'maao:ballot';
 
 /**
  * Binds the compiled ballot.compact contract to its witness implementations.

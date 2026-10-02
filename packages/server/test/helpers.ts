@@ -1,4 +1,4 @@
-import type { PollMetadata, PollTally, PollCommitments, PollPhase } from '@midnight-ballot/shared';
+import type { PollMetadata, PollTally, PollCommitments, PollPhase } from '@maao/shared';
 import type { PollRepository } from '../src/store/poll.repository.js';
 import type { IndexerReader } from '../src/services/indexer.service.js';
 

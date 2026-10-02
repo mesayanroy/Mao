@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { pollIdParamSchema } from '@midnight-ballot/shared';
+import { pollIdParamSchema } from '@maao/shared';
 import type { PollService } from '../services/poll.service.js';
 import { parseOrThrow } from '../middleware/validate.js';
 

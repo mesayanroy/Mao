@@ -13,7 +13,7 @@ services:
           memory: 2g
 
   server:
-    image: ${SERVER_IMAGE:-ghcr.io/OWNER/midnight-ballot-server:latest}
+    image: ${SERVER_IMAGE:-ghcr.io/OWNER/maao-server:latest}
     restart: unless-stopped
     deploy:
       resources:
@@ -22,7 +22,7 @@ services:
           memory: 512m
 
   client:
-    image: ${CLIENT_IMAGE:-ghcr.io/OWNER/midnight-ballot-client:latest}
+    image: ${CLIENT_IMAGE:-ghcr.io/OWNER/maao-client:latest}
     restart: unless-stopped
     deploy:
       resources:
