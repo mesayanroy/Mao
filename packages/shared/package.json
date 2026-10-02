@@ -27,7 +27,7 @@
     "@midnight-ntwrk/midnight-js-types": "^4.1.1",
     "isomorphic-ws": "^5.0.0",
     "ws": "^8.18.0",
-    "zod": "^3.23.8"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/ws": "^8.5.12",
